@@ -1,0 +1,48 @@
+2024-12-14 16:28:12,926 - INFO - Starting data processing
+2024-12-14 16:28:16,083 - INFO - Successfully processed Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv
+2024-12-14 16:28:19,069 - INFO - Successfully processed Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv
+2024-12-14 16:28:21,508 - INFO - Successfully processed Friday-WorkingHours-Morning.pcap_ISCX.csv
+2024-12-14 16:28:28,430 - INFO - Successfully processed Monday-WorkingHours.pcap_ISCX.csv
+2024-12-14 16:28:28,491 - INFO - Successfully processed NUSW-NB15_features.csv
+2024-12-14 16:28:33,732 - INFO - Successfully processed NUSW-NB15_GT.csv
+2024-12-14 16:28:37,055 - INFO - Successfully processed Thursday-WorkingHours-Afternoon-Infilteration.pcap_ISCX.csv
+2024-12-14 16:28:39,217 - INFO - Successfully processed Thursday-WorkingHours-Morning-WebAttacks.pcap_ISCX.csv
+2024-12-14 16:28:44,338 - INFO - Successfully processed Tuesday-WorkingHours.pcap_ISCX.csv
+2024-12-14 16:28:49,789 - INFO - Successfully processed UNSW-NB15_1.csv
+2024-12-14 16:28:55,222 - INFO - Successfully processed UNSW-NB15_2.csv
+2024-12-14 16:29:00,405 - INFO - Successfully processed UNSW-NB15_3.csv
+2024-12-14 16:29:03,717 - INFO - Successfully processed UNSW-NB15_4.csv
+2024-12-14 16:29:03,752 - INFO - Successfully processed UNSW-NB15_LIST_EVENTS.csv
+2024-12-14 16:29:04,658 - INFO - Successfully processed UNSW_NB15_testing-set.csv
+2024-12-14 16:29:06,126 - INFO - Successfully processed UNSW_NB15_training-set.csv
+2024-12-14 16:29:15,004 - INFO - Successfully processed Wednesday-workingHours.pcap_ISCX.csv
+2024-12-14 16:31:04,043 - INFO - Combined DataFrame head:
+    Destination Port   Flow Duration   Total Fwd Packets   Total Backward Packets  Total Length of Fwd Packets  ...  ct_src_ltm  ct_srv_dst  is_sm_ips_ports  attack_cat  label
+0            54865.0             3.0                 2.0                      0.0                         12.0  ...         NaN         NaN              NaN         NaN    NaN
+1            55054.0           109.0                 1.0                      1.0                          6.0  ...         NaN         NaN              NaN         NaN    NaN
+2            55055.0            52.0                 1.0                      1.0                          6.0  ...         NaN         NaN              NaN         NaN    NaN
+3            46236.0            34.0                 1.0                      1.0                          6.0  ...         NaN         NaN              NaN         NaN    NaN
+4            54863.0             3.0                 2.0                      0.0                         12.0  ...         NaN         NaN              NaN         NaN    NaN
+
+[5 rows x 281 columns]
+2024-12-14 16:31:04,205 - INFO - Combined DataFrame shape: (5803063, 281)
+2024-12-14 16:35:15,417 - INFO - Missing values in each column:
+ Destination Port              2972320
+ Flow Duration                 2972320
+ Total Fwd Packets             2972320
+ Total Backward Packets        2972320
+Total Length of Fwd Packets    2972320
+                                ...   
+ct_src_ltm                     5545390
+ct_srv_dst                     5545390
+is_sm_ips_ports                5545390
+attack_cat                     5545390
+label                          5545390
+Length: 281, dtype: int64
+2024-12-14 16:39:05,772 - INFO - Processed DataFrame head:
+Empty DataFrame
+Columns: []
+Index: [0, 1, 2, 3, 4]
+2024-12-14 16:39:05,848 - INFO - Processed DataFrame shape: (5803063, 0)
+2024-12-14 16:39:19,733 - INFO - Processed data saved to D:/Project/Repo/AI-Driven-Cybersecurity-Threat-Detection-System/ProcessedData/processed_data.csv
+2024-12-14 16:39:19,815 - INFO - Finished data processing, starting model training

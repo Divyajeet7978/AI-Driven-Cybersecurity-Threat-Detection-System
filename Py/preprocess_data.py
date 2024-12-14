@@ -69,6 +69,9 @@ logging.info(f"Processed data saved to {processed_output_path}")
 
 logging.info('Finished data processing, starting model training')
 
+# Check the columns to ensure 'label' is correct
+print("Columns in combined_df:", combined_df.columns)
+
 # Split the Data
 X = combined_df.drop('label', axis=1)  # Replace 'label' with your target column name
 y = combined_df['label']  # Replace 'label' with your target column name
