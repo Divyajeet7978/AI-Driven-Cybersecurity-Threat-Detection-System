@@ -2,7 +2,7 @@ import os
 import pandas as pd
 
 # Path to the directory containing your CSV files
-path_to_directory = 'D:/Datasets'  # Replace with the actual path
+path_to_directory = 'D:/Project/Datasets'  # Replace with the actual path
 csv_files = [f for f in os.listdir(path_to_directory) if f.endswith('.csv')]
 
 # Define chunk size
@@ -48,7 +48,7 @@ print("Processed DataFrame head:\n", combined_df.head())
 print("Processed DataFrame shape:", combined_df.shape)
 
 # Save the processed DataFrame to a CSV file in a non-ignored directory
-processed_output_path = 'D:/Project/ProcessedData/processed_data.csv'
+processed_output_path = 'D:/Project/Repo/AI-Driven-Cybersecurity-Threat-Detection-System/ProcessedData/processed_data.csv'
 
 # Create the output directory if it doesn't exist
 os.makedirs(os.path.dirname(processed_output_path), exist_ok=True)
