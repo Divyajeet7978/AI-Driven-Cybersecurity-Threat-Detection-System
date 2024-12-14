@@ -16,6 +16,9 @@ logging.info('Starting data processing')
 path_to_directory = 'D:/Project/Datasets'  # Replace with the actual path
 csv_files = [f for f in os.listdir(path_to_directory) if f.endswith('.csv')]
 
+# Print the list of CSV files
+print("CSV Files:", csv_files)
+
 # Define chunk size
 chunk_size = 10000
 
@@ -25,9 +28,11 @@ chunks = []
 # Read each file in chunks and append to the list
 for file in csv_files:
     file_path = os.path.join(path_to_directory, file)
+    print(f"Processing file: {file_path}")
     try:
         chunk_iter = pd.read_csv(file_path, encoding='ISO-8859-1', chunksize=chunk_size, low_memory=False)
         for chunk in chunk_iter:
+            print(f"Appending chunk of size: {chunk.shape}")
             chunks.append(chunk)
         logging.info(f"Successfully processed {file}")
     except Exception as e:
