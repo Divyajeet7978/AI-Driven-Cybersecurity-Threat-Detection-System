@@ -1,5 +1,8 @@
 import os
 import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import IsolationForest
+from sklearn.metrics import classification_report, confusion_matrix
 
 # Path to the directory containing your CSV files
 path_to_directory = 'D:/Project/Datasets'  # Replace with the actual path
@@ -55,3 +58,21 @@ os.makedirs(os.path.dirname(processed_output_path), exist_ok=True)
 
 combined_df.to_csv(processed_output_path, index=False)
 print(f"Processed data saved to {processed_output_path}")
+
+# Split the Data
+X = combined_df.drop('label', axis=1)  # Replace 'label' with your target column name
+y = combined_df['label']  # Replace 'label' with your target column name
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Train an Isolation Forest Model
+model = IsolationForest(n_estimators=100, random_state=42)
+model.fit(X_train)
+
+# Predict anomalies
+y_pred = model.predict(X_test)
+y_pred = [1 if x == -1 else 0 for x in y_pred]  # Convert to 1 for anomalies and 0 for normal
+
+# Evaluate the Model
+print("Classification Report:\n", classification_report(y_test, y_pred))
+print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
