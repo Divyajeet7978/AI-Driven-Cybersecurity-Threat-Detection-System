@@ -76,10 +76,16 @@ This project aims to build an AI-driven cybersecurity platform to detect and res
    - Push Docker image to Amazon ECR.
    - Create ECS task definition and deploy using AWS Fargate.
 
-# License 
-This project is licensed under the following terms: 
+# Custom License
 
-- The code and related files in this repository are provided for viewing purposes only. 
-- No permission is granted to use, modify, or distribute the code or related files, in whole or in part, for any purpose. 
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to view the Software, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+**Restrictions**:
+- The Software shall not be used for commercial purposes.
+- The Software shall not be reproduced, distributed, or used to create derivative works.
+- The code and related files in this repository are provided for viewing purposes only.
+- No permission is granted to use, modify, or distribute the code or related files, in whole or in part, for any purpose.
 
 © 2025 Divyajeet. All rights reserved.
