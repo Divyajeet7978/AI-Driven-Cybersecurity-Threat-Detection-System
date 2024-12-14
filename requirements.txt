@@ -1,0 +1,7 @@
+tensorflow
+keras
+scikit-learn
+pandas
+flask
+docker
+splunk-sdk
