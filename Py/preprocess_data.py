@@ -1,113 +1,124 @@
 import os
+import dask.dataframe as dd
 import pandas as pd
+from dask.distributed import Client
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import IsolationForest
 from sklearn.metrics import classification_report, confusion_matrix
-from joblib import dump
-import logging
 
-# Set up logging
-logging.basicConfig(filename='training.log', level=logging.INFO, 
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+def identify_and_convert_types(ddf):
+    for col in ddf.columns:
+        try:
+            # Convert columns to numeric where possible
+            ddf[col] = dd.to_numeric(ddf[col], errors='coerce')
+        except:
+            ddf[col] = ddf[col].astype(str)
+    return ddf
 
-logging.info('Starting data processing')
-
-# Path to the directory containing your CSV files
-path_to_directory = 'D:/Project/Datasets'  # Replace with the actual path
-csv_files = [f for f in os.listdir(path_to_directory) if f.endswith('.csv')]
-
-# Print the list of CSV files
-print("CSV Files:", csv_files)
-
-# Define chunk size
-chunk_size = 10000
-
-# Initialize an empty list to hold DataFrames
-chunks = []
-
-# Read each file in chunks and append to the list
-for file in csv_files:
-    file_path = os.path.join(path_to_directory, file)
-    print(f"Processing file: {file_path}")
+def process_file(file):
     try:
-        chunk_iter = pd.read_csv(file_path, encoding='ISO-8859-1', chunksize=chunk_size, low_memory=False)
-        for chunk in chunk_iter:
-            print(f"Appending chunk of size: {chunk.shape}")
-            chunks.append(chunk)
-        logging.info(f"Successfully processed {file}")
+        # Read all columns as strings initially in smaller blocks
+        ddf = dd.read_csv(file, dtype=str, assume_missing=True, low_memory=False, blocksize="32MB")
+        print(f"Columns in {file}: {ddf.columns}")
+        # Convert to appropriate types
+        ddf = identify_and_convert_types(ddf)
+        
+        # Compute in chunks and write intermediate results to disk
+        output_intermediate_path = f"D:/Project/Repo/AI-Driven-Cybersecurity-Threat-Detection-System/Intermediate/processed_{os.path.basename(file)}"
+        os.makedirs(os.path.dirname(output_intermediate_path), exist_ok=True)
+        ddf.to_csv(output_intermediate_path, index=False)
+        print(f"Successfully processed and saved intermediate results for {file}")
+    except PermissionError as e:
+        print(f"Permission error while processing {file}: {e}")
     except Exception as e:
-        logging.error(f"Error processing {file}: {e}")
+        print(f"Error processing {file}: {e}")
 
-# Combine all chunks into a single DataFrame
-if chunks:
-    combined_df = pd.concat(chunks, ignore_index=True)
-else:
-    combined_df = pd.DataFrame()  # Create an empty DataFrame if no chunks were read
+if __name__ == '__main__':
+    # Set up Dask client with specified number of workers and increased memory limit
+    client = Client(n_workers=2, memory_limit='8GB')  # Adjust memory limit as needed
+    print(client)
 
-# Verify the combined DataFrame
-logging.info(f"Combined DataFrame head:\n{combined_df.head()}")
-logging.info(f"Combined DataFrame shape: {combined_df.shape}")
+    # Path to the directory containing your original CSV files
+    original_directory = 'D:/Project/Datasets'
+    csv_files = [os.path.join(original_directory, f) for f in os.listdir(original_directory) if f.endswith('.csv')]
 
-# Inspect Missing Values
-missing_values = combined_df.isnull().sum()
-logging.info(f"Missing values in each column:\n{missing_values}")
+    # Process files in smaller chunks
+    for file in csv_files:
+        print(f"Processing file: {file}")
+        process_file(file)
 
-# Drop Columns with a High Percentage of Missing Values
-threshold = 0.5  # 50%
-combined_df = combined_df.loc[:, combined_df.isnull().mean() < threshold]
+    # Combine intermediate results
+    intermediate_dir = 'D:/Project/Repo/AI-Driven-Cybersecurity-Threat-Detection-System/Intermediate'
+    intermediate_files = [os.path.join(intermediate_dir, f) for f in os.listdir(intermediate_dir) if f.endswith('.csv')]
+    if not intermediate_files:
+        print("No intermediate files to concatenate.")
+    else:
+        try:
+            combined_ddf = dd.read_csv(intermediate_files, dtype=str, assume_missing=True, low_memory=False)
 
-# Fill Remaining Missing Values with Mean
-combined_df = combined_df.fillna(combined_df.mean())
+            # Compute to a pandas DataFrame
+            combined_df = combined_ddf.compute()
+            print("Combined DataFrame shape:", combined_df.shape)
 
-# Print to verify the missing values are handled
-logging.info(f"Processed DataFrame head:\n{combined_df.head()}")
-logging.info(f"Processed DataFrame shape: {combined_df.shape}")
+            # Inspect missing values
+            missing_values_percent = combined_df.isnull().mean()
+            print("Missing values percentage in each column:\n", missing_values_percent)
 
-# Save the processed DataFrame to a CSV file in a non-ignored directory
-processed_output_path = 'D:/Project/Repo/AI-Driven-Cybersecurity-Threat-Detection-System/ProcessedData/processed_data.csv'
+            # Drop columns with more than 80% missing values
+            threshold = 0.8
+            columns_to_drop = combined_df.columns[missing_values_percent > threshold]
+            print(f"Columns to drop (missing > {threshold * 100}%):", columns_to_drop)
+            combined_df = combined_df.drop(columns=columns_to_drop)
 
-# Create the output directory if it doesn't exist
-os.makedirs(os.path.dirname(processed_output_path), exist_ok=True)
+            # Separate numeric and non-numeric columns
+            numeric_columns = combined_df.select_dtypes(include=['number']).columns
+            non_numeric_columns = combined_df.select_dtypes(exclude=['number']).columns
 
-combined_df.to_csv(processed_output_path, index=False)
-logging.info(f"Processed data saved to {processed_output_path}")
+            # Convert numeric columns to float to avoid type conflicts
+            combined_df[numeric_columns] = combined_df[numeric_columns].astype(float)
 
-logging.info('Finished data processing, starting model training')
+            # Fill missing values in numeric columns with mean
+            combined_df[numeric_columns] = combined_df[numeric_columns].fillna(combined_df[numeric_columns].mean())
 
-# Check the columns to ensure 'label' is correct
-print("Columns in combined_df:", combined_df.columns)
+            # Optionally, fill missing values in non-numeric columns with a placeholder or mode
+            combined_df[non_numeric_columns] = combined_df[non_numeric_columns].fillna('Unknown')
 
-# Split the Data
-X = combined_df.drop('label', axis=1)  # Replace 'label' with your target column name
-y = combined_df['label']  # Replace 'label' with your target column name
+            print("Processed DataFrame shape:", combined_df.shape)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+            # Save the processed DataFrame to a CSV file
+            output_path = 'D:/Project/Repo/AI-Driven-Cybersecurity-Threat-Detection-System/ProcessedData/processed_data.csv'
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            combined_df.to_csv(output_path, index=False)
+            print(f"Processed data saved to {output_path}")
 
-# Train an Isolation Forest Model
-model = IsolationForest(n_estimators=100, random_state=42)
-model.fit(X_train)
+            # Continue with the rest of the pipeline (encoding, splitting, etc.)
+            # Verify if 'target' column exists or identify the correct target column
+            target_column = 'label'  # Assuming 'label' is the correct target column
+            if target_column not in combined_df.columns:
+                print(f"Target column '{target_column}' not found. Please check the dataset.")
+            else:
+                X = combined_df.drop(target_column, axis=1)
+                y = combined_df[target_column]
 
-logging.info('Model training completed')
+                # Standardize the Data
+                scaler = StandardScaler()
+                X_scaled = scaler.fit_transform(X)
 
-# Predict anomalies
-y_pred = model.predict(X_test)
-y_pred = [1 if x == -1 else 0 for x in y_pred]  # Convert to 1 for anomalies and 0 for normal
+                # Split the Data into Training and Testing Sets
+                X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
 
-# Evaluate the Model
-classification_report_output = classification_report(y_test, y_pred)
-confusion_matrix_output = confusion_matrix(y_test, y_pred)
-logging.info('Model evaluation completed')
-logging.info(f'Classification Report:\n{classification_report_output}')
-logging.info(f'Confusion Matrix:\n{confusion_matrix_output}')
+                # Train an Isolation Forest Model
+                model = IsolationForest(random_state=42)
+                model.fit(X_train)
 
-# Save the trained model
-model_output_path = 'D:/Project/Repo/AI-Driven-Cybersecurity-Threat-Detection-System/Models/isolation_forest_model.joblib'
-dump(model, model_output_path)
-logging.info(f'Model saved to {model_output_path}')
+                # Predict anomalies
+                y_pred = model.predict(X_test)
 
-# Save the evaluation metrics to a file
-evaluation_output_path = 'D:/Project/Repo/AI-Driven-Cybersecurity-Threat-Detection-System/Models/evaluation_report.txt'
-with open(evaluation_output_path, 'w') as f:
-    f.write(f'Classification Report:\n{classification_report_output}\n')
-    f.write(f'Confusion Matrix:\n{confusion_matrix_output}\n')
-logging.info(f'Evaluation report saved to {evaluation_output_path}')
+                # Evaluate the Model
+                print("Classification Report:\n", classification_report(y_test, y_pred))
+                print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+        except PermissionError as e:
+            print(f"Permission error while reading intermediate files: {e}")
+        except Exception as e:
+            print(f"Error reading intermediate files: {e}")

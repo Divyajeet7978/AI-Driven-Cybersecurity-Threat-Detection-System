@@ -1,7 +1,9 @@
 tensorflow
 keras
-scikit-learn
+scikit-learn~=1.6.0
 pandas
 flask
 docker
 splunk-sdk
+
+dask~=2024.12.1
