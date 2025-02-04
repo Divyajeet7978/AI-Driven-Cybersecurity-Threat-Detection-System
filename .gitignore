@@ -1,0 +1,8 @@
+# Ignore Intermediate directory
+/Intermediate/
+
+# Ignore ProcessedData directory
+/ProcessedData/
+
+/.venv/
+# You can add more directories or files to ignore as needed
