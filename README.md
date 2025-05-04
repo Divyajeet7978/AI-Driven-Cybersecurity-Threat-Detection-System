@@ -10,7 +10,7 @@ This project aims to build an AI-driven cybersecurity platform to detect and res
 2. **Create a Virtual Environment**:
    - Navigate to your project directory.
    - Create a virtual environment: `python -m venv venv`.
-   - Activate the virtual environment:
+   - Activate the virtual environment :
      - On macOS/Linux: `source venv/bin/activate`
      - On Windows: `venv\Scripts\activate`
 3. **Install Required Libraries**:
