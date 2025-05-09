@@ -5,7 +5,7 @@ This project aims to build an AI-driven cybersecurity platform to detect and res
 
 ## Setup Instructions
 1. **Install Python**:
-   - Ensure Python 3.8 or higher is installed.
+   - Ensure Python 3.8 or higher is installed or not.
    - Verify the installation by running `python --version`.
 2. **Create a Virtual Environment**:
    - Navigate to your project directory.
